@@ -1,0 +1,12 @@
+version: "3.2"
+
+services:
+  postgres:
+    image: index.docker.io/postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: measurements
+    ports:
+      - 5432:5432
