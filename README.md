@@ -1,3 +1,9 @@
+
+# Install libpg
+Diesel needs the native postgress library:
+`sudo apt install libpq-dev`
+
+# Benchmark
 autocannon http://localhost:3080/test
 
 ```
