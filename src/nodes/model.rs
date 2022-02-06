@@ -30,9 +30,9 @@ pub struct UpdateNodeDto {
     #[validate(length(max = 256))]
     pub notes: Option<String>,
 
+    #[serde(alias = "s")]
     pub status: Option<i32>,
 
-    #[serde(alias = "s")]
     pub ts: Option<std::time::SystemTime>,
 }
 
@@ -42,6 +42,7 @@ pub struct UpdateNodeStatusDto {
     pub ip: Option<String>,
 
     #[validate(required)]
+    #[serde(alias = "s")]
     pub status: Option<i32>,
 }
 

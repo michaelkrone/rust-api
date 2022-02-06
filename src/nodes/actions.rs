@@ -63,14 +63,14 @@ pub fn update_status_by_mac(
     conn: &PgConnection,
     mac_address: String,
     data: &model::UpdateNodeStatus,
-) -> Result<Option<bool>, DbError> {
+) -> Result<Option<model::Node>, DbError> {
     use crate::schema::nodes::dsl::*;
     trace!("update db mac {}", mac_address);
     let result = diesel::update(nodes.filter(mac.eq(mac_address)))
         .set((ip.eq(&data.ip), status.eq(data.status)))
-        .execute(conn)?;
+        .get_result::<model::Node>(conn)?;
 
-    Ok(Some(result == 1))
+    Ok(Some(result))
 }
 
 /// Run query using Diesel to delete an existing database row.

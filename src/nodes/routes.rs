@@ -100,8 +100,8 @@ async fn status(
     .await
     .map_err(error::ErrorInternalServerError)?;
 
-    if let Some(_) = result {
-        Ok(HttpResponse::Created().finish())
+    if let Some(result) = result {
+        Ok(HttpResponse::Ok().json(result.id))
     } else {
         let res = HttpResponse::NotFound().body(format!("Node not registered"));
         Ok(res)

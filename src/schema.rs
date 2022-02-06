@@ -3,7 +3,7 @@ table! {
         id -> Int8,
         val -> Float8,
         typ -> Varchar,
-        node -> Varchar,
+        node -> Int4,
         ts -> Timestamp,
     }
 }
