@@ -1,9 +1,9 @@
 table! {
-    temperatures (id) {
+    measurements (id) {
         id -> Int8,
-        value -> Float8,
-        unit -> Bpchar,
+        val -> Float8,
+        typ -> Varchar,
         node -> Int4,
-        // ts -> Nullable<Timestamptz>,
+        ts -> Timestamp,
     }
 }

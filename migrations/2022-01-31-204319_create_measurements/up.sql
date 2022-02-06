@@ -1,9 +1,9 @@
-CREATE TABLE temperatures (
+CREATE TABLE measurements (
   id BIGSERIAL PRIMARY KEY,
-  value FLOAT8 NOT NULL,
-  unit CHAR NOT NULL DEFAULT 'C',
+  val FLOAT8 NOT NULL,
+  typ VARCHAR(4) NOT NULL,
   node INTEGER NOT NULL,
-  ts TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  ts TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_temperatures_node ON temperatures(node);
+CREATE INDEX idx_measurements_node ON measurements(node);

@@ -3,8 +3,20 @@
 Diesel needs the native postgress library:
 `sudo apt install libpq-dev`
 
+# diesel CLI
+Diesel CLI runs migrations and creates the schema file
+
+## Install
+`cargo install diesel_cli --no-default-features --features postgres`
+
+## Setup schema
+`diesel setup`
+
+## Run migrations
+`diesel migration run`
+
 # Benchmark
-autocannon http://localhost:3080/test
+`$ autocannon http://localhost:3080/test`
 
 ```
 ┌─────────┬──────┬──────┬───────┬──────┬─────────┬─────────┬──────┐

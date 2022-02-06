@@ -1,7 +1,7 @@
 use actix_web::web;
 
-use crate::temperatures;
+use crate::measurements;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
-    temperatures::routes::init_routes(cfg);
+    measurements::routes::init_routes(cfg);
 }

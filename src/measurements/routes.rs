@@ -1,15 +1,17 @@
-use super::actions;
-use super::model;
 use crate::db::pool;
+use crate::measurements::actions;
+use crate::measurements::model;
 use actix_web::{delete, error, get, post, put, web, Error, HttpResponse};
+use actix_web_validator::Json;
+use actix_web_validator::Validate;
 
-#[get("/temperatures")]
+#[get("/measurements")]
 async fn find_all(pool: web::Data<pool::DbPool>) -> Result<HttpResponse, Error> {
     let result = web::block(move || {
         let conn = pool.get()?;
         actions::find_all(&conn)
     })
-    .await?
+    .await
     .map_err(error::ErrorInternalServerError)?;
 
     if let Some(result) = result {
@@ -20,14 +22,14 @@ async fn find_all(pool: web::Data<pool::DbPool>) -> Result<HttpResponse, Error> 
     }
 }
 
-#[get("/temperatures/{id}")]
+#[get("/measurements/{id}")]
 async fn find(pool: web::Data<pool::DbPool>, id: web::Path<i64>) -> Result<HttpResponse, Error> {
     let id = id.into_inner();
     let result = web::block(move || {
         let conn = pool.get()?;
         actions::find_by_id(&conn, id)
     })
-    .await?
+    .await
     .map_err(error::ErrorInternalServerError)?;
 
     if let Some(result) = result {
@@ -38,20 +40,32 @@ async fn find(pool: web::Data<pool::DbPool>, id: web::Path<i64>) -> Result<HttpR
     }
 }
 
-#[post("/temperatures")]
+#[post("/measurements")]
 async fn create(
     pool: web::Data<pool::DbPool>,
-    dto: web::Json<model::CreateTemperature>,
+    dto: Json<model::CreateMeasurementDto>,
 ) -> Result<HttpResponse, Error> {
+    match dto.validate() {
+        Err(e) => return Ok(HttpResponse::BadRequest().json(e)),
+        Ok(data) => data,
+    }
+
     let dto = dto.into_inner();
     let result = web::block(move || {
         let conn = pool.get()?;
-        actions::create(&conn, &dto)
+        actions::create(
+            &conn,
+            &model::InsertMeasurement {
+                val: dto.val.unwrap(),
+                typ: dto.typ.unwrap(),
+                node: dto.node.unwrap(),
+            },
+        )
     })
-    .await?
+    .await
     .map_err(error::ErrorInternalServerError)?;
 
-    if result {
+    if let Some(_) = result {
         Ok(HttpResponse::Created().finish())
     } else {
         let res = HttpResponse::InternalServerError().body(format!("Error while creating data"));
@@ -59,22 +73,28 @@ async fn create(
     }
 }
 
-#[put("/temperatures/{id}")]
+#[put("/measurements/{id}")]
 async fn update(
     pool: web::Data<pool::DbPool>,
     id: web::Path<i64>,
-    dto: web::Json<model::CreateTemperature>,
+    dto: Json<model::UpdateMeasurementDto>,
 ) -> Result<HttpResponse, Error> {
     let id = id.into_inner();
     let dto = dto.into_inner();
     let result = web::block(move || {
         let conn = pool.get()?;
-        actions::update(&conn, id, &dto)
+        actions::update(
+            &conn,
+            id,
+            &model::UpdateMeasurement {
+                val: dto.val.unwrap(),
+            },
+        )
     })
-    .await?
+    .await
     .map_err(error::ErrorInternalServerError)?;
 
-    if result {
+    if let Some(_) = result {
         Ok(HttpResponse::NoContent().finish())
     } else {
         let res = HttpResponse::InternalServerError().body(format!("Error while updating data"));
@@ -82,17 +102,17 @@ async fn update(
     }
 }
 
-#[delete("/temperatures/{id}")]
+#[delete("/measurements/{id}")]
 async fn delete(pool: web::Data<pool::DbPool>, id: web::Path<i64>) -> Result<HttpResponse, Error> {
     let id = id.into_inner();
     let result = web::block(move || {
         let conn = pool.get()?;
         actions::delete(&conn, id)
     })
-    .await?
+    .await
     .map_err(error::ErrorInternalServerError)?;
 
-    if result {
+    if let Some(_) = result {
         Ok(HttpResponse::NoContent().finish())
     } else {
         let res = HttpResponse::InternalServerError().body(format!("Error while creating data"));
