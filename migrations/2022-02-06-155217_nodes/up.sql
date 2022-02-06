@@ -1,0 +1,10 @@
+CREATE TABLE nodes (
+  id SERIAL PRIMARY KEY,
+  mac VARCHAR(17) NOT NULL,
+  ip VARCHAR(15),
+  notes VARCHAR(256),
+  status INT,
+  ts TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_nodes_node ON nodes(mac);

@@ -11,7 +11,7 @@ pub struct CreateMeasurementDto {
 
     #[serde(alias = "n")]
     #[validate(required)]
-    pub node: Option<i32>,
+    pub node: Option<String>,
 
     #[serde(alias = "t")]
     #[validate(length(min = 1, max = 4))]
@@ -30,7 +30,7 @@ pub struct UpdateMeasurementDto {
 pub struct InsertMeasurement {
     pub val: f64,
     pub typ: String,
-    pub node: i32,
+    pub node: String,
 }
 
 #[derive(Insertable)]
@@ -44,6 +44,6 @@ pub struct Measurement {
     pub id: i64,
     pub val: f64,
     pub typ: String,
-    pub node: i32,
+    pub node: String,
     pub ts: std::time::SystemTime,
 }
