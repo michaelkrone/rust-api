@@ -4,6 +4,7 @@ use crate::nodes::model;
 use actix_web::{delete, error, get, post, put, web, Error, HttpResponse};
 use actix_web_validator::Json;
 use actix_web_validator::Validate;
+use log::trace;
 
 #[get("/nodes")]
 async fn find_all(pool: web::Data<pool::DbPool>) -> Result<HttpResponse, Error> {
@@ -73,16 +74,13 @@ async fn create(
     }
 }
 
-#[put("/nodes/{mac}/status")]
-async fn status(
+#[post("/nodes/status/{mac}")]
+async fn update_status(
     pool: web::Data<pool::DbPool>,
     mac: web::Path<String>,
     dto: Json<model::UpdateNodeStatusDto>,
 ) -> Result<HttpResponse, Error> {
-    match dto.validate() {
-        Err(e) => return Ok(HttpResponse::BadRequest().json(e)),
-        Ok(data) => data,
-    }
+    trace!("update db mac {}", mac);
 
     let mac = mac.into_inner();
     let dto = dto.into_inner();
@@ -90,7 +88,7 @@ async fn status(
         let conn = pool.get()?;
         actions::update_status_by_mac(
             &conn,
-            mac,
+            &mac,
             &model::UpdateNodeStatus {
                 ip: dto.ip.unwrap(),
                 status: dto.status.unwrap(),
@@ -123,7 +121,6 @@ async fn update(
             id,
             &model::UpdateNode {
                 mac: dto.mac,
-                ip: dto.ip,
                 notes: dto.notes,
                 status: dto.status,
             },
@@ -135,7 +132,7 @@ async fn update(
     if let Some(_) = result {
         Ok(HttpResponse::NoContent().finish())
     } else {
-        let res = HttpResponse::InternalServerError().body(format!("Error while updating data"));
+        let res = HttpResponse::NotFound().body(format!("Node not registered"));
         Ok(res)
     }
 }
@@ -164,4 +161,5 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(create);
     cfg.service(update);
     cfg.service(delete);
+    cfg.service(update_status);
 }

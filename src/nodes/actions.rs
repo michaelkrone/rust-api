@@ -49,9 +49,7 @@ pub fn update(
     let result = diesel::update(nodes.filter(id.eq(db_id)))
         .set((
             mac.eq(data.mac.as_ref().unwrap()),
-            ip.eq(data.ip.as_ref().unwrap()),
-            notes.eq(data.notes.as_ref().unwrap()),
-            status.eq(data.status.as_ref().unwrap()),
+            notes.eq(data.notes.as_ref().unwrap_or(&String::from(""))),
         ))
         .execute(conn)?;
 
@@ -61,7 +59,7 @@ pub fn update(
 /// Run query using Diesel to update an existing database row.
 pub fn update_status_by_mac(
     conn: &PgConnection,
-    mac_address: String,
+    mac_address: &String,
     data: &model::UpdateNodeStatus,
 ) -> Result<Option<model::Node>, DbError> {
     use crate::schema::nodes::dsl::*;

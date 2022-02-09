@@ -23,9 +23,6 @@ pub struct UpdateNodeDto {
     #[serde(alias = "m")]
     pub mac: Option<String>,
 
-    #[validate(length(equal = 15))]
-    pub ip: Option<String>,
-
     #[serde(alias = "n")]
     #[validate(length(max = 256))]
     pub notes: Option<String>,
@@ -38,7 +35,7 @@ pub struct UpdateNodeDto {
 
 #[derive(Deserialize, Validate)]
 pub struct UpdateNodeStatusDto {
-    #[validate(required, length(equal = 15))]
+    #[validate(required, length(min = 11, max = 15))]
     pub ip: Option<String>,
 
     #[validate(required)]
@@ -58,7 +55,6 @@ pub struct InsertNode {
 #[table_name = "nodes"]
 pub struct UpdateNode {
     pub mac: Option<String>,
-    pub ip: Option<String>,
     pub notes: Option<String>,
     pub status: Option<i32>,
 }

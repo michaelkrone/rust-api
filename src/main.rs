@@ -1,4 +1,5 @@
-use actix_web::{middleware, web, App, HttpServer};
+use actix_cors::Cors;
+use actix_web::{http, middleware, web, App, HttpServer};
 use diesel::{
     r2d2::{self, ConnectionManager},
     PgConnection,
@@ -19,9 +20,15 @@ async fn main() -> std::io::Result<()> {
         .expect("Failed to create database pool");
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .send_wildcard()
+            .allowed_header(http::header::CONTENT_TYPE)
+            .max_age(3600);
+
         App::new()
             .app_data(web::Data::new(pool.clone()))
             .wrap(middleware::Logger::default())
+            .wrap(cors)
             .service(
                 web::scope("/api/v1")
                     .app_data(web::JsonConfig::default().limit(1024))
