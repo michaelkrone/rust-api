@@ -1,48 +1,54 @@
+use crate::db::error::DbError;
 use diesel::prelude::*;
 use log::trace;
 
-use crate::nodes::model;
-
-type DbError = Box<dyn std::error::Error + Send + Sync>;
+use crate::nodes::model::nodes::{self, Nodes};
 
 // It is common when using Diesel with Actix web to import schema-related
 // modules inside a function's scope (rather than the normal module's scope)
 // to prevent import collisions and namespace pollution.
 
 /// Run query using Diesel to find nodes and return it.
-pub fn find_all(conn: &PgConnection) -> Result<Option<Vec<model::Node>>, DbError> {
+pub fn find_all(
+    conn: &PgConnection,
+    limit: Option<i64>,
+    offset: Option<i64>,
+) -> Result<Option<Vec<Nodes>>, DbError> {
     use crate::schema::nodes::dsl::*;
-    let result = nodes.load::<model::Node>(conn).optional()?;
-
-    Ok(result)
-}
-
-/// Run query using Diesel to find nodes by id and return it.
-pub fn find_by_id(conn: &PgConnection, db_id: i32) -> Result<Option<model::Node>, DbError> {
-    use crate::schema::nodes::dsl::*;
-    trace!("query db id {}", db_id);
     let result = nodes
-        .filter(id.eq(db_id))
-        .first::<model::Node>(conn)
+        .limit(limit.unwrap_or(100))
+        .offset(offset.unwrap_or(0))
+        .load::<Nodes>(conn)
         .optional()?;
 
     Ok(result)
 }
 
+/// Run query using Diesel to find nodes by id and return it.
+pub fn find_by_id(conn: &PgConnection, db_id: i32) -> Result<Option<Nodes>, DbError> {
+    use crate::schema::nodes::dsl::*;
+    trace!("query db id {}", db_id);
+    let result = nodes.filter(id.eq(db_id)).first::<Nodes>(conn).optional()?;
+
+    Ok(result)
+}
+
 /// Run query using Diesel to insert a new database row and return the result.
-pub fn create(conn: &PgConnection, data: &model::InsertNode) -> Result<Option<bool>, DbError> {
+pub fn create(conn: &PgConnection, data: &nodes::InsertNode) -> Result<Option<Nodes>, DbError> {
     use crate::schema::nodes::dsl::*;
     trace!("create new node");
-    let result = diesel::insert_into(nodes).values(data).execute(conn)?;
+    let result = diesel::insert_into(nodes)
+        .values(data)
+        .get_result::<Nodes>(conn)?;
 
-    Ok(Some(result == 1))
+    Ok(Some(result))
 }
 
 /// Run query using Diesel to update an existing database row.
 pub fn update(
     conn: &PgConnection,
     db_id: i32,
-    data: &model::UpdateNode,
+    data: &nodes::UpdateNode,
 ) -> Result<Option<bool>, DbError> {
     use crate::schema::nodes::dsl::*;
     trace!("update db id {}", db_id);
@@ -54,21 +60,6 @@ pub fn update(
         .execute(conn)?;
 
     Ok(Some(result == 1))
-}
-
-/// Run query using Diesel to update an existing database row.
-pub fn update_status_by_mac(
-    conn: &PgConnection,
-    mac_address: &String,
-    data: &model::UpdateNodeStatus,
-) -> Result<Option<model::Node>, DbError> {
-    use crate::schema::nodes::dsl::*;
-    trace!("update db mac {}", mac_address);
-    let result = diesel::update(nodes.filter(mac.eq(mac_address)))
-        .set((ip.eq(&data.ip), status.eq(data.status)))
-        .get_result::<model::Node>(conn)?;
-
-    Ok(Some(result))
 }
 
 /// Run query using Diesel to delete an existing database row.
